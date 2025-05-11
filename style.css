@@ -1,0 +1,39 @@
+.wrapper {
+    /* Text margin */
+    margin: auto;
+    width: 60%;
+    padding: 10px;
+    perspective: 1000px;
+}
+
+.text-align-center {
+    text-align: center;
+}
+
+button {
+    color: white;
+    background-color: blue;
+    border-radius: 5px;
+    border: 1px solid black;
+    padding: 10px;
+    box-shadow: 1px 1px 5px 0px rgba(0,0,0,0.75);
+    -webkit-box-shadow: 1px 3px 5px 0px rgba(0,0,0,0.75);
+    -moz-box-shadow: 1px 3px 5px 0px rgba(0,0,0,0.75);
+}
+
+button:active {
+    background-color: #00008B;
+}
+
+button + button {
+    margin-left: 10px;
+}
+
+input {
+    width: 100%;
+    margin: 5px;
+    border-radius: 5px;
+    border: 1px solid black;
+    padding: 5px
+
+}
