@@ -1,10 +1,17 @@
+use qol::{Center, Wrapper};
 use sycamore::prelude::*;
+
+mod qol;
 
 fn main() {
     sycamore::render(|| {
         view! {
-            h1(style="text-align:center") { "WebTag" }
-            p(style="text-align:center") { "Hello, world!" }
+            Wrapper {
+                Center {
+                    h1 { "WebTag" }
+                    p { "Hello, world!" }
+                }
+            }
         }
     });
 }
