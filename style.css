@@ -37,3 +37,17 @@ input {
     padding: 5px
 
 }
+
+.row {
+    display: flex;
+}
+
+.column {
+    flex: 50%;
+}
+
+.thumb {
+    border: 1px solid black;
+    border-radius: 5px;
+    background: #F5F5F5;
+}
