@@ -1,9 +1,37 @@
 use qol::{Center, Wrapper};
 use sycamore::prelude::*;
+use wasm_bindgen::prelude::*;
+use wasm_bindgen_futures::{spawn_local, JsFuture};
 
 mod qol;
 
+macro_rules! wasm_import {
+    ($($tt:tt)*) => {
+        #[wasm_bindgen]
+        extern "C" {
+            #[wasm_bindgen]
+            pub fn $($tt)*;
+        }
+    };
+}
+macro_rules! wasm_import_with_ns {
+    ($ns: ident, $($tt:tt)*) => {
+        #[wasm_bindgen]
+        extern "C" {
+            #[wasm_bindgen(js_namespace = $ns)]
+            pub fn $($tt)*;
+        }
+    };
+}
+
+wasm_import_with_ns!(console, log(s: String));
+wasm_import!(arrayFromArrayBuffer(buf: JsValue) -> Vec<u8>);
+
 fn main() {
+    let update_fields_from_file = move |data: &Vec<u8>| {
+        let magic = String::from_utf8_lossy(&data.as_slice()[0..4]);
+        log(magic.into());
+    };
     sycamore::render(|| {
         view! {
             Wrapper {
@@ -14,7 +42,18 @@ fn main() {
                         r#type="file",
                         id="song_upload",
                         name="song_upload",
-                        accept="audio/mpeg, audio/wav, audio/aiff, audio/flac, audio/mp4, audio/ogg, audio/opus") {}
+                        accept="audio/mpeg, audio/wav, audio/aiff, audio/flac, audio/mp4, audio/ogg, audio/opus",
+                        on:change=move |e: sycamore::web::events::Event| {
+                            let input = e.target().unwrap().dyn_into::<web_sys::HtmlInputElement>().unwrap();
+                            let file_list = input.files().unwrap();
+                            let file = file_list.get(0).unwrap();
+                            log(file.name());
+                            spawn_local(async move {
+                                let buf_raw = JsFuture::from(file.array_buffer()).await; // theoretically should never be Err but we'll see
+                                let data: Vec<u8> = arrayFromArrayBuffer(buf_raw.unwrap());
+                                update_fields_from_file(&data);
+                            });
+                        }) {}
                     div(class="row") {
                         div(class="column") {
                             Wrapper {

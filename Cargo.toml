@@ -4,4 +4,16 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+multitag = "0.3.2"
 sycamore = "0.9.1"
+wasm-bindgen = "0.2.100"
+wasm-bindgen-futures = "0.4.50"
+
+[dependencies.web-sys]
+version = "0.3.77"
+features = [
+    "HtmlInputElement",
+    "FileList",
+    "File",
+    "Blob"
+]
