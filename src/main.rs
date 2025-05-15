@@ -1,4 +1,6 @@
+use multitag::Tag;
 use qol::{Center, Wrapper};
+use std::io::Cursor;
 use sycamore::prelude::*;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::{spawn_local, JsFuture};
@@ -28,9 +30,10 @@ wasm_import_with_ns!(console, log(s: String));
 wasm_import!(arrayFromArrayBuffer(buf: JsValue) -> Vec<u8>);
 
 fn main() {
-    let update_fields_from_file = move |data: &Vec<u8>| {
-        let magic = String::from_utf8_lossy(&data.as_slice()[0..4]);
-        log(magic.into());
+    let update_fields_from_file = move |path: &str, data: &Vec<u8>| {
+        let cursor = Cursor::new(data);
+        let tag = Tag::read_from(path, cursor).unwrap(); // TODO: change this later
+        log(format!("{:#?}", tag.title()));
     };
     sycamore::render(|| {
         view! {
@@ -51,7 +54,7 @@ fn main() {
                             spawn_local(async move {
                                 let buf_raw = JsFuture::from(file.array_buffer()).await; // theoretically should never be Err but we'll see
                                 let data: Vec<u8> = arrayFromArrayBuffer(buf_raw.unwrap());
-                                update_fields_from_file(&data);
+                                update_fields_from_file(&file.name(), &data);
                             });
                         }) {}
                     div(class="row") {

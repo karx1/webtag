@@ -358,9 +358,9 @@ checksum = "07dcca13d1740c0a665f77104803360da0bdb3323ecce2e93fa2c959a6d52806"
 
 [[package]]
 name = "multitag"
-version = "0.3.2"
+version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8de9ebbace56fdda4ca121786c034f4aabf117a4091d85290d83f1442f58c1de"
+checksum = "350b1c25a1d4627bf7322048f4dbd28394d42c72303f90395f089cbb5a62aacc"
 dependencies = [
  "id3",
  "metaflac",
