@@ -30,12 +30,28 @@ wasm_import_with_ns!(console, log(s: String));
 wasm_import!(arrayFromArrayBuffer(buf: JsValue) -> Vec<u8>);
 
 fn main() {
-    let update_fields_from_file = move |path: &str, data: &Vec<u8>| {
-        let cursor = Cursor::new(data);
-        let tag = Tag::read_from(path, cursor).unwrap(); // TODO: change this later
-        log(format!("{:#?}", tag.title()));
-    };
     sycamore::render(|| {
+        // did not realize that signals have to go in the sycamore render context lmao
+        let title_signal = create_signal(String::new());
+        let artist_signal = create_signal(String::new());
+        let album_signal = create_signal(String::new());
+
+        let update_fields_from_file = move |path: &str, data: &Vec<u8>| {
+            let cursor = Cursor::new(data);
+            if let Ok(tag) = Tag::read_from(path, cursor) {
+                // skill issue from the multitag author here
+                // i wonder who that was
+                title_signal.set(tag.title().unwrap_or_default().into());
+                artist_signal.set(tag.artist().unwrap_or_default());
+
+                if let Some(album) = tag.get_album_info() {
+                    album_signal.set(album.title.unwrap_or_default());
+
+                    // TODO: handle cover image
+                }
+            }
+        };
+
         view! {
             Wrapper {
                 Center {
@@ -71,11 +87,11 @@ fn main() {
                         div(class="column") {
                             Wrapper {
                                 label(r#for="title") { "Title" }
-                                input(r#type="text", id="title", name="title") {}
+                                input(r#type="text", id="title", name="title", bind:value=title_signal) {}
                                 label(r#for="artist") { "Artist" }
-                                input(r#type="text", id="artist", name="artist") {}
+                                input(r#type="text", id="artist", name="artist", bind:value=artist_signal) {}
                                 label(r#for="album") { "Album" }
-                                input(r#type="text", id="album", name="album") {}
+                                input(r#type="text", id="album", name="album", bind:value=album_signal) {}
                             }
                         }
                     }
