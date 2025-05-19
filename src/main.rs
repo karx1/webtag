@@ -1,4 +1,5 @@
 use base64::{engine::general_purpose::STANDARD, Engine as _};
+use multitag::data::Picture;
 use multitag::Tag;
 use qol::{Center, Wrapper};
 use std::io::Cursor;
@@ -36,7 +37,7 @@ fn main() {
         let title_signal = create_signal(String::new());
         let artist_signal = create_signal(String::new());
         let album_signal = create_signal(String::new());
-        let img_src_signal = create_signal(String::new());
+        let img_signal = create_signal(None);
 
         let update_fields_from_file = move |path: &str, data: &Vec<u8>| {
             let cursor = Cursor::new(data);
@@ -48,16 +49,10 @@ fn main() {
 
                 if let Some(album) = tag.get_album_info() {
                     album_signal.set(album.title.unwrap_or_default());
-
-                    if let Some(pic) = album.cover {
-                        img_src_signal.set(format!(
-                            "data:{};base64,{}",
-                            pic.mime_type,
-                            STANDARD.encode(pic.data)
-                        ));
-                    } else {
-                        img_src_signal.set(String::new());
-                    }
+                    img_signal.set(album.cover);
+                } else {
+                    img_signal.set(None);
+                    album_signal.set(String::new());
                 }
             }
         };
@@ -86,7 +81,13 @@ fn main() {
                     div(class="row") {
                         div(class="column") {
                             Wrapper {
-                                img(class="thumb", width="150", height="150", src=img_src_signal.get_clone()) {}
+                                img(class="thumb", width="150", height="150", src=img_signal.with(|maybe_pic: &Option<Picture>| {
+                                    if let Some(pic) = maybe_pic {
+                                        format!("data:{};base64,{}", pic.mime_type, STANDARD.encode(&pic.data))
+                                    } else {
+                                        String::new()
+                                    }
+                                })) {}
                                 input(
                                     r#type="file",
                                     id="thumb_upload",
