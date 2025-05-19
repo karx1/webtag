@@ -30,6 +30,7 @@ macro_rules! wasm_import_with_ns {
 
 wasm_import_with_ns!(console, log(s: String));
 wasm_import!(arrayFromArrayBuffer(buf: JsValue) -> Vec<u8>);
+wasm_import!(clearInput(id: &str));
 
 fn main() {
     sycamore::render(|| {
@@ -54,6 +55,8 @@ fn main() {
                     img_signal.set(None);
                     album_signal.set(String::new());
                 }
+
+                clearInput("thumb_upload");
             }
         };
 
@@ -92,7 +95,23 @@ fn main() {
                                     r#type="file",
                                     id="thumb_upload",
                                     name="thumb_upload",
-                                    accept="image/jpeg, image/png, image/webp, image/gif") {}
+                                    accept="image/jpeg, image/png, image/webp, image/gif",
+                                    on:change=move |e: sycamore::web::events::Event| {
+                                        let input = e.target().unwrap().dyn_into::<web_sys::HtmlInputElement>().unwrap();
+                                        let file_list = input.files().unwrap();
+                                        let file = file_list.get(0).unwrap();
+                                        log(file.name());
+                                        log(file.type_());
+                                        spawn_local(async move {
+                                            let buf_raw = JsFuture::from(file.array_buffer()).await;
+                                            let data: Vec<u8> = arrayFromArrayBuffer(buf_raw.unwrap());
+                                            img_signal.set(Some(Picture {
+                                                mime_type: file.type_(),
+                                                data
+                                            }));
+                                        });
+                                    }
+                                ) {}
                             }
                         }
                         div(class="column") {

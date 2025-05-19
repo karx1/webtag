@@ -3,3 +3,7 @@ function arrayFromArrayBuffer(buf) {
     let arr = Array.from(uint8Array);
     return arr;
 }
+
+function clearInput(id) {
+    document.getElementById(id).value = null;
+}
