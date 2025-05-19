@@ -782,6 +782,7 @@ dependencies = [
 name = "webtag"
 version = "0.1.0"
 dependencies = [
+ "base64",
  "multitag",
  "sycamore",
  "wasm-bindgen",
