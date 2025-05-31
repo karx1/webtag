@@ -1,11 +1,16 @@
-use base64::{engine::general_purpose::STANDARD, Engine as _};
-use multitag::data::Picture;
+#![allow(clippy::too_many_lines)]
+
+use base64::{Engine as _, engine::general_purpose::STANDARD};
 use multitag::Tag;
+use multitag::data::Album;
+use multitag::data::Picture;
 use qol::{Center, Wrapper};
 use std::io::Cursor;
+use std::io::Seek;
+use std::path::Path;
 use sycamore::prelude::*;
 use wasm_bindgen::prelude::*;
-use wasm_bindgen_futures::{spawn_local, JsFuture};
+use wasm_bindgen_futures::{JsFuture, spawn_local};
 
 mod qol;
 
@@ -31,6 +36,7 @@ macro_rules! wasm_import_with_ns {
 wasm_import_with_ns!(console, log(s: String));
 wasm_import!(arrayFromArrayBuffer(buf: JsValue) -> Vec<u8>);
 wasm_import!(clearInput(id: &str));
+wasm_import!(downloadFile(download: &str));
 
 fn main() {
     sycamore::render(|| {
@@ -39,10 +45,15 @@ fn main() {
         let artist_signal = create_signal(String::new());
         let album_signal = create_signal(String::new());
         let img_signal = create_signal(None);
+        let file_data_signal = create_signal(Vec::new());
+        let file_type_signal = create_signal(String::new());
+        let extension_signal = create_signal(String::new());
 
-        let update_fields_from_file = move |path: &str, data: &Vec<u8>| {
+        let update_fields_from_file = move |extension: &str, data: &Vec<u8>| {
+            file_data_signal.set(data.clone());
+            extension_signal.set(extension.to_string());
             let cursor = Cursor::new(data);
-            if let Ok(tag) = Tag::read_from(path, cursor) {
+            if let Ok(tag) = Tag::read_from(extension, cursor) {
                 // skill issue from the multitag author here
                 // i wonder who that was
                 title_signal.set(tag.title().unwrap_or_default().into());
@@ -60,6 +71,36 @@ fn main() {
             }
         };
 
+        let assemble_download = move |_| {
+            let mut output = file_data_signal.get_clone();
+            let mut cursor = Cursor::new(&mut output);
+
+            // TODO: make this more sane
+            if let Ok(mut tag) = Tag::read_from(&extension_signal.get_clone(), &mut cursor) {
+                tag.set_title(&title_signal.get_clone());
+                tag.set_artist(&artist_signal.get_clone());
+
+                let album = Album {
+                    artist: Some(artist_signal.get_clone()),
+                    title: Some(album_signal.get_clone()),
+                    cover: img_signal.get_clone(),
+                };
+
+                tag.set_album_info(album).unwrap(); // idk why this would fail tbh
+
+                cursor.rewind().unwrap(); // this shouldn't fail either
+                tag.write_to_vec(&mut output).unwrap(); // nor should this (except for flac apparently)
+            }
+
+            let download = format!(
+                "data:{};base64,{}",
+                file_type_signal.get_clone(),
+                STANDARD.encode(&output)
+            );
+
+            downloadFile(&download);
+        };
+
         view! {
             Wrapper {
                 Center {
@@ -74,11 +115,13 @@ fn main() {
                             let input = e.target().unwrap().dyn_into::<web_sys::HtmlInputElement>().unwrap();
                             let file_list = input.files().unwrap();
                             let file = file_list.get(0).unwrap();
-                            log(file.name());
+                            let filename = file.name();
+                            file_type_signal.set(file.type_());
                             spawn_local(async move {
                                 let buf_raw = JsFuture::from(file.array_buffer()).await; // theoretically should never be Err but we'll see
                                 let data: Vec<u8> = arrayFromArrayBuffer(buf_raw.unwrap());
-                                update_fields_from_file(&file.name(), &data);
+                                let extension = Path::new(&filename).extension().unwrap().to_str().unwrap();
+                                update_fields_from_file(extension, &data);
                             });
                         }) {}
                     div(class="row") {
@@ -125,6 +168,8 @@ fn main() {
                             }
                         }
                     }
+                    button(on:click=assemble_download) { "Save" }
+                    a(style="display:none", id="download_anchor") {}
                 }
             }
         }
