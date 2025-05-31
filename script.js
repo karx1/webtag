@@ -8,9 +8,9 @@ function clearInput(id) {
     document.getElementById(id).value = null;
 }
 
-function downloadFile(download) {
+function downloadFile(download, filename) {
     const anchor = document.getElementById("download_anchor");
     anchor.href = download;
-    anchor.download = download;
+    anchor.download = filename;
     anchor.click();
 }

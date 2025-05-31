@@ -36,7 +36,7 @@ macro_rules! wasm_import_with_ns {
 wasm_import_with_ns!(console, log(s: String));
 wasm_import!(arrayFromArrayBuffer(buf: JsValue) -> Vec<u8>);
 wasm_import!(clearInput(id: &str));
-wasm_import!(downloadFile(download: &str));
+wasm_import!(downloadFile(download: &str, filename: &str));
 
 fn main() {
     sycamore::render(|| {
@@ -47,10 +47,13 @@ fn main() {
         let img_signal = create_signal(None);
         let file_data_signal = create_signal(Vec::new());
         let file_type_signal = create_signal(String::new());
+        let file_name_signal = create_signal(String::new());
         let extension_signal = create_signal(String::new());
 
-        let update_fields_from_file = move |extension: &str, data: &Vec<u8>| {
+        let update_fields_from_file = move |path: &str, data: &Vec<u8>| {
             file_data_signal.set(data.clone());
+            file_name_signal.set(path.to_string());
+            let extension = Path::new(path).extension().unwrap().to_str().unwrap();
             extension_signal.set(extension.to_string());
             let cursor = Cursor::new(data);
             if let Ok(tag) = Tag::read_from(extension, cursor) {
@@ -98,7 +101,7 @@ fn main() {
                 STANDARD.encode(&output)
             );
 
-            downloadFile(&download);
+            downloadFile(&download, &file_name_signal.get_clone_untracked());
         };
 
         view! {
@@ -120,8 +123,7 @@ fn main() {
                             spawn_local(async move {
                                 let buf_raw = JsFuture::from(file.array_buffer()).await; // theoretically should never be Err but we'll see
                                 let data: Vec<u8> = arrayFromArrayBuffer(buf_raw.unwrap());
-                                let extension = Path::new(&filename).extension().unwrap().to_str().unwrap();
-                                update_fields_from_file(extension, &data);
+                                update_fields_from_file(&filename, &data);
                             });
                         }) {}
                     div(class="row") {
