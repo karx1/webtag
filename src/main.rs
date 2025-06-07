@@ -50,6 +50,20 @@ fn main() {
         let file_name_signal = create_signal(String::new());
         let extension_signal = create_signal(String::new());
 
+        let clear_all = move || {
+            title_signal.set(String::new());
+            artist_signal.set(String::new());
+            album_signal.set(String::new());
+            img_signal.set(None);
+            file_data_signal.set(Vec::new());
+            file_type_signal.set(String::new());
+            file_name_signal.set(String::new());
+            extension_signal.set(String::new());
+
+            clearInput("song_upload");
+            clearInput("thumb_upload");
+        };
+
         let update_fields_from_file = move |path: &str, data: &Vec<u8>| {
             file_data_signal.set(data.clone());
             file_name_signal.set(path.to_string());
@@ -102,6 +116,8 @@ fn main() {
             );
 
             downloadFile(&download, &file_name_signal.get_clone_untracked());
+
+            clear_all();
         };
 
         view! {
