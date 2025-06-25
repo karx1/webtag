@@ -5,13 +5,10 @@ edition = "2024"
 
 [dependencies]
 base64 = "0.22.1"
+multitag = "0.4.0"
 sycamore = "0.9.1"
 wasm-bindgen = "0.2.100"
 wasm-bindgen-futures = "0.4.50"
-
-[dependencies.multitag]
-git = "https://github.com/karx1/multitag"
-rev = "cc12caca0ed8423605e7b0ae4c56cdc11000fd3a"
 
 
 [dependencies.web-sys]

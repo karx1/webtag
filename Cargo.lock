@@ -342,14 +342,15 @@ checksum = "453e991b2efe96c288cbc2d03a19e353504294559ecb6c03067fff5bd824616d"
 
 [[package]]
 name = "multitag"
-version = "0.3.3"
-source = "git+https://github.com/karx1/multitag?rev=cc12caca0ed8423605e7b0ae4c56cdc11000fd3a#cc12caca0ed8423605e7b0ae4c56cdc11000fd3a"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "96a09d3b652bcd0cecaf3147810b51ae30e437badd287a31a8279901370e668b"
 dependencies = [
  "id3",
  "metaflac",
  "mp4ameta",
  "opusmeta",
- "thiserror",
+ "thiserror 2.0.12",
 ]
 
 [[package]]
@@ -369,14 +370,14 @@ checksum = "42f5e15c9953c5e4ccceeb2e7382a716482c34515315f7b03532b8b4e8393d2d"
 
 [[package]]
 name = "opusmeta"
-version = "1.1.0"
+version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "94d55eb99fba8e0b994e264c7bc13776bc740a9b2e5a214310d59fd990bb2c88"
+checksum = "cf8d2a6f3f6879f5e5fefdc6eb0a99aba2326a0288ee4f61719afbf3367c19b3"
 dependencies = [
  "base64",
  "mime-sniffer",
  "ogg",
- "thiserror",
+ "thiserror 1.0.69",
 ]
 
 [[package]]
@@ -615,7 +616,16 @@ version = "1.0.69"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b6aaf5339b578ea85b50e080feb250a3e8ae8cfcdff9a461c9ec2904bc923f52"
 dependencies = [
- "thiserror-impl",
+ "thiserror-impl 1.0.69",
+]
+
+[[package]]
+name = "thiserror"
+version = "2.0.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "567b8a2dae586314f7be2a752ec7474332959c6460e02bde30d702a66d488708"
+dependencies = [
+ "thiserror-impl 2.0.12",
 ]
 
 [[package]]
@@ -623,6 +633,17 @@ name = "thiserror-impl"
 version = "1.0.69"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4fee6c4efc90059e10f81e6d42c60a18f76588c3d74cb83a0b242a2b6c7504c1"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "thiserror-impl"
+version = "2.0.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7f7cf42b4507d8ea322120659672cf1b9dbb93f8f2d4ecfd6e51350ff5b17a1d"
 dependencies = [
  "proc-macro2",
  "quote",
